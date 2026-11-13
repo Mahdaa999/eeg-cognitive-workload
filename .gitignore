@@ -1,27 +1,43 @@
 # Python
 __pycache__/
 *.py[cod]
-*.pyo
-
-# Virtual environments
 .venv/
 venv/
 env/
 
-# macOS
+# macOS and IDE
 .DS_Store
-
-# IDE
 .vscode/
 .idea/
-
-# Jupyter
 .ipynb_checkpoints/
 
-# Local configuration and secrets
+# Secrets
 .env
 .env.*
 
 # Raw EEG data
 data/raw/
 STEW Dataset/
+
+# Large feature matrices
+eeg_features.csv
+eeg_features_filtered.csv
+eeg_features_v2.csv
+
+# Participant-level and diagnostic data
+participant_predictions*.csv
+filtered_participant_predictions.csv
+regression_participant_predictions.csv
+raw_data_audit.csv
+raw_eeg_diagnostics*.csv
+diagnostics_*participant_outliers.csv
+
+# Diagnostic plots
+diagnostic_plots/
+subject*_*.png
+suspicious_jumps.png
+largest_jumps_comparison.png
+
+# Experimental outputs in project root
+/*.csv
+/*.png
