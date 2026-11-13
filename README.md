@@ -1,136 +1,177 @@
-# EEG-Based Cognitive Workload Recognition
+# EEG-Based Cognitive Workload Analysis
 
-An independent research project investigating EEG-based cognitive workload recognition using signal processing and classical machine-learning methods, with particular attention to **inter-subject variability and cross-subject generalization**.
+An independent research project exploring EEG-based cognitive workload classification using signal processing, spectral feature extraction, and classical machine learning.
 
-The project explores the feasibility of identifying cognitive workload states from EEG spectral features and examines the challenges of developing models that generalize across individuals.
+The project investigates the relationship between EEG spectral features and self-reported cognitive workload, with particular attention to inter-subject variability and the challenges of participant-level classification.
 
-## Research Question
+## Research Objectives
 
-How effectively can EEG spectral features support cognitive workload recognition, and how does model performance change when evaluation moves from EEG windows to participant-level analysis?
+This project explores two related questions:
+
+- Can spectral features extracted from EEG recordings help distinguish between different workload-related conditions?
+- How does classification performance change when evaluation accounts for participant-level separation?
+
+The broader motivation is to understand the potential and limitations of EEG-based cognitive state recognition for future human-centered and adaptive interactive systems.
 
 ## Dataset
 
-The project uses the publicly available **STEW (Simultaneous Task EEG Workload)** dataset.
+This project uses the **STEW (Simultaneous Task EEG Workload) dataset**.
 
-- EEG recordings from 14 channels
+Dataset characteristics:
+
+- 48 participants
+- 14 EEG channels
 - Sampling frequency: 128 Hz
-- Two workload conditions: low and high
-- EEG recordings segmented into analysis windows
+- Two recording conditions: low workload (`lo`) and high workload (`hi`)
+- Self-reported workload ratings available for 45 participants
 
-Raw EEG data are not included in this repository. Users should obtain the dataset from its original source and comply with its usage conditions.
+For the workload classification experiments, recordings from the high-workload condition (`hi`) were analyzed. Participants with ratings from 4 to 9 were grouped into:
+
+- **Moderate workload:** ratings 4–6
+- **High workload:** ratings 7–9
+
+Raw EEG recordings are not included in this repository. Users must obtain the dataset from its original source and comply with the applicable data-use conditions.
 
 ## Methodology
 
-The analysis involves the following stages:
+### 1. EEG Signal Processing
 
-### 1. EEG Preprocessing
-- Signal filtering
-- EEG segmentation
-- Preparation of signals for feature extraction
+EEG recordings were segmented into non-overlapping 4-second windows. Different feature extraction approaches were investigated, including:
+
+- Signal mean removal
+- Band-pass filtering in an alternative preprocessing pipeline
+- Welch power spectral density estimation
+- Spectral feature extraction
 
 ### 2. Feature Extraction
-Frequency-domain features are extracted from EEG recordings, including:
-- Theta-band power
-- Alpha-band power
-- Beta-band power
-- Additional spectral features
+
+Frequency-domain features were extracted from three frequency bands:
+
+- Theta: 4–8 Hz
+- Alpha: 8–13 Hz
+- Beta: 13–30 Hz
+
+Three feature extraction variants were explored:
+
+- Original spectral features
+- Alternative spectral estimation and feature aggregation (V2)
+- Features extracted after band-pass filtering
+
+These variants use different signal-processing configurations and are evaluated as separate experimental approaches.
 
 ### 3. Machine Learning
 
-Three classical machine-learning approaches have been investigated:
+The following classical machine learning models were investigated:
 
-- Random Forest
 - Logistic Regression
 - Support Vector Machine (RBF kernel)
+- Random Forest
 
-### 4. Model Evaluation
+### 4. Evaluation Strategy
 
-Two evaluation perspectives have been explored:
+Participant-based evaluation was conducted using **5-fold GroupKFold cross-validation**, ensuring that recordings from the same participant were not split between training and test folds.
 
-- **Window-level evaluation:** Assessing model performance across EEG segments.
-- **Participant-level evaluation:** Examining performance under participant-based evaluation to investigate the effect of inter-subject variability.
+For participant-level classification, window-level predictions were aggregated to obtain one prediction per participant.
 
-### 5. Statistical Analysis
+This evaluation design examines performance under participant-wise separation. It is a grouped five-fold evaluation and should not be interpreted as Leave-One-Subject-Out (LOSO) validation.
 
-Additional analyses include:
-- Statistical examination of EEG features
-- Multiple-comparison correction using False Discovery Rate (FDR)
-- Permutation testing to assess classification performance beyond chance.
+### 5. Statistical and Exploratory Analyses
+
+Additional experiments include:
+
+- EEG feature comparisons
+- Feature-level statistical analysis
+- False Discovery Rate (FDR) correction for multiple comparisons
+- Participant-level permutation testing
+- Exploratory regression for predicting self-reported workload ratings
 
 ## Preliminary Results
 
-Initial experiments have produced the following results:
+All results below are preliminary and should be interpreted in the context of the corresponding experimental pipeline.
 
-### Window-Level Evaluation
+### Participant-Level Workload Classification
 
-| Model | Balanced Accuracy | F1-score |
-|---|---:|---:|
-| Random Forest | 0.773 ± 0.027 | 0.777 |
-| Logistic Regression | 0.663 ± 0.051 | 0.697 |
-| RBF-SVM | 0.503 ± 0.047 | 0.548 |
+The following results were obtained using the original spectral feature set and 5-fold GroupKFold evaluation.
 
-### Participant-Level Evaluation
-
-In an exploratory participant-level analysis, performance was lower:
-
-| Model | Balanced Accuracy | Accuracy | F1-score |
+| Model | Accuracy | Balanced Accuracy | F1-score |
 |---|---:|---:|---:|
-| Logistic Regression | 0.622 | 0.580 | 0.738 |
-| RBF-SVM | 0.622 | 0.575 | 0.746 |
-| Random Forest | 0.600 | 0.570 | 0.700 |
+| Logistic Regression | 0.622 | 0.575 | 0.746 |
+| SVM (RBF) | 0.622 | 0.575 | 0.746 |
+| Random Forest | 0.578 | 0.550 | 0.678 |
 
-These preliminary findings suggest that classification performance can vary considerably depending on the evaluation strategy.
+The results indicate limited and model-dependent classification performance at the participant level.
 
-**Important:** Window-level performance should not be interpreted as evidence of subject-independent generalization. Further validation using rigorous subject-wise evaluation protocols is needed.
+### Alternative Feature Extraction Experiments
 
-### Statistical Findings
+Additional feature extraction approaches were investigated to examine how preprocessing and spectral estimation choices affect classification performance.
 
-- An exploratory permutation test did not establish statistically significant performance above chance (p ≈ 0.144).
-- An initial feature-level analysis identified an uncorrected association involving F7 theta power; however, no feature remained statistically significant after FDR correction.
+The V2 and filtered feature sets produced different results from the original feature set. These experiments are exploratory and should not be interpreted as directly controlled comparisons because their feature extraction and modeling configurations differ.
+
+### Recording Condition Classification
+
+A separate experiment investigated the classification of low- versus high-workload recording conditions (`lo` and `hi`) using grouped cross-validation.
+
+The Random Forest model achieved a balanced accuracy of approximately 0.773 ± 0.027 in this experiment.
+
+**This result concerns recording-condition classification and is not the participant-level Moderate-versus-High workload classification result reported above.**
+
+### Permutation Testing
+
+An exploratory participant-level permutation test was conducted using 200 permutations.
+
+- Observed balanced accuracy: approximately 0.58
+- Permutation-test p-value: approximately 0.144
+
+The test did not provide statistically significant evidence of classification performance above chance at the conventional 0.05 significance level.
+
+### Exploratory Workload Regression
+
+Ridge Regression was also investigated to predict continuous self-reported workload ratings from participant-level spectral features.
+
+The original feature set with alpha = 1000 achieved:
+
+- MAE: 1.423
+- RMSE: 1.807
+- Spearman correlation: 0.006
+
+The mean baseline achieved an MAE of approximately 1.246 and an RMSE of approximately 1.432.
+
+Ridge Regression did not outperform the mean baseline in these experiments. The results do not provide convincing evidence of reliable continuous workload prediction.
+
+## Interpretation and Limitations
+
+The experiments highlight several challenges in EEG-based cognitive workload recognition:
+
+- Inter-subject variability can affect classification performance.
+- Results may differ depending on the feature extraction and preprocessing strategy.
+- Window-level and participant-level evaluation answer different research questions.
+- The current participant-level classification results are exploratory and do not establish robust generalization to unseen individuals.
+- The regression experiments did not demonstrate improvement over a simple mean baseline.
+- Further validation with larger datasets and additional subject-wise evaluation protocols is necessary.
 
 ## Tools and Technologies
 
-- Python
-- MNE-Python
+- Python 3.13.9
 - NumPy
-- SciPy
 - Pandas
+- SciPy
 - scikit-learn
 - Matplotlib
 
 ## Project Status
 
-**Ongoing — Experimental Analysis**
+**Ongoing — Exploratory Research**
 
-The initial preprocessing, feature extraction, classification experiments, and exploratory statistical analyses have been conducted.
+The project includes EEG preprocessing, spectral feature extraction, machine learning classification, participant-level evaluation, and exploratory statistical analyses.
 
-Further work will focus on refining participant-level evaluation, investigating inter-subject variability, and assessing the robustness of EEG-based workload recognition.
+Future work may investigate more robust participant-level evaluation, feature selection, alternative modeling approaches, and the integration of EEG-based cognitive state recognition into adaptive human–computer interaction systems.
 
-## Research Motivation
+## Research Relevance
 
-Reliable cognitive workload recognition could contribute to adaptive human–computer interaction systems that respond to changes in users' cognitive states.
+Understanding cognitive workload from EEG signals may contribute to human-centered computing applications, including adaptive interfaces, affective computing, and cognitive-state-aware interaction.
 
-Understanding the limitations of cross-subject generalization is an important step toward developing more robust and human-centered interactive systems.
-
-## Repository Structure
-
-```text
-eeg-cognitive-workload/
-│
-├── README.md
-├── requirements.txt
-├── notebooks/
-├── src/
-├── results/
-│   ├── figures/
-│   └── evaluation/
-└── docs/
-```
-
-## Research Focus
-
-**EEG Signal Processing · Cognitive Workload Recognition · Machine Learning · Inter-Subject Variability · Human–Computer Interaction**
+This project provides an exploratory investigation of the opportunities and methodological challenges involved in EEG-based workload recognition.
 
 ---
 
-*This repository documents an ongoing independent research project. Experimental results are preliminary and may be updated as further analyses and validation experiments are conducted.*
+*This repository documents an independent research project. All reported results are preliminary and are presented with their methodological limitations. The code and findings are intended for research and educational purposes.*
